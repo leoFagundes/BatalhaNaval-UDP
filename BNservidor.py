@@ -79,13 +79,23 @@ while True:
     client_message = bytesAddressPair[0].decode()
     client_address = bytesAddressPair[1]
 
+    if check_victory():
+        response = "Você venceu! Deseja recomeçar o jogo? (sim/não)"
+        UDPServerSocket.sendto(response.encode(), client_address)
+        client_response, _ = UDPServerSocket.recvfrom(bufferSize)
+        if client_response.strip().lower() == "sim":
+            restart_game()
+        else:
+            print("Encerrando o jogo...")
+            break
+
     try:
         col, row = ord(client_message[0].upper()) - ord('A'), int(client_message[1:]) - 1
         if 0 <= row < ROWS and 0 <= col < COLS:
             if server_board[row][col] == ' ':
                 response = "Erro - Acertou a Água!"
-            elif server_board[row][col] == '~':
-                response = "Erro - Alvo já foi escolhido!"
+            elif server_board[row][col] in ['~', 'X']:
+                response = "Erro - Posição já foi escolhida!"
             else:
                 response = "Acerto - Acertou um navio!"
         else:
@@ -97,12 +107,3 @@ while True:
     if "Acerto" in response or "Erro" in response:
         update_server_board(response, col, row)
 
-    if check_victory():
-        response = "Você venceu! Deseja recomeçar o jogo? (sim/não)"
-        UDPServerSocket.sendto(response.encode(), client_address)
-        client_response, _ = UDPServerSocket.recvfrom(bufferSize)
-        if client_response.strip().lower() == "sim":
-            restart_game()
-        else:
-            print("Encerrando o jogo...")
-            break

@@ -13,10 +13,14 @@ def print_client_board(board):
             print(f"0{i + 1} {' '.join(row)}")
         else:
             print(f"{i + 1} {' '.join(row)}")
+            
 
 client_board = [[' ' for _ in range(COLS)] for _ in range(ROWS)]
 
 def update_board(response, user_input):
+    if len(user_input) < 2 or not user_input[0].isalpha() or not user_input[1:].isdigit():
+        return
+
     row = int(user_input[1:]) - 1
     col = ord(user_input[0].upper()) - ord('A')
     if "Acerto - Acertou um navio!" in response:
@@ -31,7 +35,11 @@ while True:
     UDPClientSocket.sendto(user_input.encode(), serverAddressPort)
     response, _ = UDPClientSocket.recvfrom(bufferSize)
     print(response.decode())
-    update_board(response.decode(), user_input)
-    print_client_board(client_board)
+    if 'venceu' in response.decode():
+        user_input = input("")
+        UDPClientSocket.sendto(user_input.encode(), serverAddressPort)
+    else:
+        update_board(response.decode(), user_input)
+        print_client_board(client_board)
 
 UDPClientSocket.close()
